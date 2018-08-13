@@ -1,0 +1,127 @@
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js"></script>
+<script type="text/javascript">
+var app = angular.module('MyApp', [])
+app.controller('MyController', function ($scope, $window, $http) {
+$scope.Temp;
+$scope.Forecast = [];
+$scope.Text;
+$scope.getWeather = function(name,country){        
+  if($scope.Name == undefined  || name == undefined || name ==""){
+    $scope.Name = "Pittsburgh";
+    $scope.Country="PA";
+  }else{
+    $scope.Name = name;
+    $scope.Country=country;
+  }  
+  var url = 'https://query.yahooapis.com/v1/public/yql?'
+  +'q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20'
+  +'(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22'+$scope.Name
+  +'%2C%20'+$scope.Country+'%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys';
+  $http.get(url).success(function(data, status, headers, config) {       
+  $scope.Temp = data.query.results.channel.item.condition.temp; 
+  $scope.Text= data.query.results.channel.item.condition.text;
+  $scope.Forecast = data.query.results.channel.item.forecast;
+  console.log($scope.Forecast);
+  console.log(data);
+  console.log('Temperature is '+ $scope.Temp); 
+  //window.alert("Temperature is "+ $scope.Temp);
+
+    }).
+    error(function(data, status, headers, config) {
+      //log error
+    });
+    
+    return  $scope.Temp;
+};
+
+
+//WeatherData Array to store Data
+$scope.WeatherData = [];
+$scope.Add = function () {
+    //Add the new item to the Array.
+    var weather = {};
+    weather.Name = $scope.Name;
+    weather.Country = $scope.Country;
+    weather.Temp=$scope.Temp
+    $scope.WeatherData.push(weather);
+
+    //Clear the TextBoxes.
+    $scope.Name = "";
+    $scope.Country = "";
+    $scope.Temp="";
+};
+
+
+$scope.Remove = function (index) {
+  //Find the record using Index from Array.
+  var name = $scope.WeatherData[index].Name;
+  if ($window.confirm("Do you want to delete: " + name)) {
+      //Remove the item from Array using Index.
+      $scope.WeatherData.splice(index, 1);
+ }
+}
+});
+ 
+</script>
+<!--The content below is only a placeholder and can be replaced.-->
+<!DOCTYPE html>
+<html>
+    <style>
+        table, th , td  {
+          border: 1px solid grey;
+          border-collapse: collapse;
+          padding: 10px;
+          text-align:center;
+          margin-bottom: 10px;
+          margin-top: 20px;
+          width: 70%;
+          padding: 8px;
+          
+
+        }
+        .input {
+          padding: 1px 2px 3px 4px;
+        }
+  
+        </style>
+  <body>
+    <div ng-app="MyApp" ng-controller="MyController" style="text-align:center">
+      <div class="input" style="padding-top:10px;padding-bottom:10px"><b><font size="8">Weekly Weather Forcast</font></b></div>
+      <div style="padding-top:10px;padding-bottom:10px;padding-right: 50px" >  
+        <b>City Name : </b><input type="text" ng-model="Name"/> 
+        <b>State Name: </b> <input type="text" ng-model="Country"/>
+        <input type="button" ng-click="getWeather(Name,Country)" value="get Weather"  />
+      </div>
+      <div >  
+        <b>Current Weather is : </b>  {{Temp}}F {{Text}} 
+        
+      </div>  
+     <div class="input" style="padding-top:10px;padding-bottom:10px"> 
+        <table align="center">
+            <tr>
+                <th>  Date  </th>
+                <th>  High  </th>  
+                <th>  Low  </th>
+                <th>  condition  </th>         
+            </tr border: 1px solid black>
+          
+            <tbody ng-repeat="f in Forecast">         
+              <tr>
+                <td> {{f.date}}</td>
+                <td> {{f.high}}&#176; F</td>
+                <td> {{f.low}}&#176; F</td> 
+                  <td> {{f.text}} </td>
+              </tr>
+            </tbody>
+          </table>
+      </div>
+    </div>
+  </body> 
+</html>  
+  
+
+
+
+
+
+
